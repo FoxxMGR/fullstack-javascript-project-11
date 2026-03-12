@@ -1,0 +1,27 @@
+{
+  "name": "@hexlet/code",
+  "version": "1.0.0",
+  "description": "[![Actions Status](https://github.com/FoxxMGR/fullstack-javascript-project-11/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/FoxxMGR/fullstack-javascript-project-11/actions)",
+  "homepage": "https://github.com/FoxxMGR/fullstack-javascript-project-11#readme",
+  "bugs": {
+    "url": "https://github.com/FoxxMGR/fullstack-javascript-project-11/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FoxxMGR/fullstack-javascript-project-11.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
+    "jest": "^30.3.0"
+  }
+}
