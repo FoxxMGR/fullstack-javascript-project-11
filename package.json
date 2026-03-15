@@ -1,27 +1,23 @@
 {
-  "name": "@hexlet/code",
-  "version": "1.0.0",
-  "description": "[![Actions Status](https://github.com/FoxxMGR/fullstack-javascript-project-11/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/FoxxMGR/fullstack-javascript-project-11/actions)",
-  "homepage": "https://github.com/FoxxMGR/fullstack-javascript-project-11#readme",
-  "bugs": {
-    "url": "https://github.com/FoxxMGR/fullstack-javascript-project-11/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/FoxxMGR/fullstack-javascript-project-11.git"
-  },
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "index.js",
+  "name": "fullstack-javascript-project-11",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@stylistic/eslint-plugin": "^5.10.0",
-    "eslint": "^10.0.3",
     "globals": "^17.4.0",
-    "jest": "^30.3.0"
+    "vite": "^8.0.0"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "core-js": "^3.48.0",
+    "i18next": "^25.8.18",
+    "regenerator-runtime": "^0.14.1",
+    "valtio": "^1.13.2",
+    "yup": "^1.7.1"
   }
 }
