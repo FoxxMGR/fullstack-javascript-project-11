@@ -1,57 +1,84 @@
-import { subscribe, snapshot } from 'valtio/vanilla'
 
-export default (state, handlers) => {
-  const elements = {
-    form: document.querySelector('form'),
-    input: document.querySelector('input[name="url"]'),
-    submitButton: document.querySelector('button[type="submit"]'),
-    feedback: document.querySelector('.feedback'),
-  }
+
+import { subscribe, snapshot } from 'valtio/vanilla';
+
+/**
+ * @param {Object} state
+ * @param {Object} handlers
+ * @param {Function} handlers.handleSubmit
+ * @param {Function} handlers.handleLanguageChange
+ * @param {Object} i18nInstance
+ */
+export default (state, handlers, i18nInstance) => {
+  const container = document.querySelector('.container');
+  if (!container) return { start: () => {} };
+
+  const renderLanguageSwitcher = () => {
+    const existingSwitcher = document.querySelector('.language-switcher');
+    if (existingSwitcher) existingSwitcher.remove();
+
+    const switcher = document.createElement('div');
+    switcher.className = 'language-switcher btn-group mb-3';
+    switcher.setAttribute('role', 'group');
+
+    ['ru', 'en'].forEach((lng) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `btn btn-sm ${state.lng === lng ? 'btn-primary' : 'btn-outline-primary'}`;
+      btn.textContent = i18nInstance.t(`languages.${lng}`);
+      btn.addEventListener('click', () => handlers.handleLanguageChange(lng));
+      switcher.appendChild(btn);
+    });
+
+    container.prepend(switcher);
+  };
+
+  const renderForm = () => {
+    const snap = snapshot(state);
+    const { processState, errors, valid } = snap.form;
+
+    let form = document.querySelector('form');
+    if (!form) {
+      form = document.createElement('form');
+      form.className = 'mb-3';
+      container.appendChild(form);
+    }
+
+    form.innerHTML = `
+      <div class="mb-3">
+        <label for="rss-url" class="form-label">${i18nInstance.t('labels.rssUrl')}</label>
+        <input 
+          type="url" 
+          class="form-control ${!valid && processState === 'error' ? 'is-invalid' : ''}" 
+          id="rss-url"
+          name="url" 
+          placeholder="https://example.com/rss"
+          value="${snap.form.fields.url}"
+        >
+        <div class="invalid-feedback">${errors.url ? i18nInstance.t(errors.url) : ''}</div>
+        <div class="feedback small mt-2 ${processState === 'success' ? 'text-success' : processState === 'error' ? 'text-danger' : ''}">
+          ${processState === 'success' ? i18nInstance.t('feedback.success') : ''}
+          ${processState === 'error' && !errors.url ? i18nInstance.t('feedback.error') : ''}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" ${processState === 'sending' ? 'disabled' : ''}>
+        ${i18nInstance.t('buttons.add')}
+      </button>
+    `;
+
+    form.addEventListener('submit', handlers.handleSubmit);
+  };
 
   const render = () => {
-    const snap = snapshot(state)
-    const { processState, errors, valid } = snap.form
+    renderLanguageSwitcher();
+    renderForm();
+  };
 
-    // Обработка состояния процесса
-    switch (processState) {
-      case 'sending':
-        elements.submitButton.disabled = true
-        break
-      case 'success':
-        elements.submitButton.disabled = false
-        elements.form.reset()
-        elements.input.focus()
-        elements.input.classList.remove('is-invalid')
-        elements.feedback.textContent = 'RSS успешно загружен'
-        elements.feedback.classList.remove('text-danger')
-        elements.feedback.classList.add('text-success')
-        break
-      case 'error':
-        elements.submitButton.disabled = false
-        if (!valid) {
-          elements.input.classList.add('is-invalid')
-          elements.feedback.textContent = errors.url
-          elements.feedback.classList.remove('text-success')
-          elements.feedback.classList.add('text-danger')
-        }
-        break
-      default:
-        elements.submitButton.disabled = false
-        elements.input.classList.remove('is-invalid')
-        elements.feedback.textContent = ''
-        elements.feedback.classList.remove('text-danger', 'text-success')
-    }
-  }
-
-  // Подписка на изменения состояния
-  subscribe(state.form, render)
-
-  // Подписка на форму
-  elements.form.addEventListener('submit', handlers.handleSubmit)
+  subscribe(state, render);
 
   return {
     start: () => {
-      render()
+      render();
     },
-  }
-}
+  };
+};
