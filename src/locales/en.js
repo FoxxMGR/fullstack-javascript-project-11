@@ -1,3 +1,5 @@
+// @ts-check
+
 export default {
   translation: {
     languages: {
@@ -19,6 +21,11 @@ export default {
       url: 'Must be a valid URL',
       duplicate: 'RSS already exists',
       network: 'Network error',
+      invalidRss: 'Resource does not contain valid RSS',
     },
+    titles: {
+  feeds: 'Feeds',
+  posts: 'Posts',
+},
   },
 };

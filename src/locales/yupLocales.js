@@ -1,4 +1,4 @@
-import { setLocale } from 'yup';
+import { setLocale } from 'yup'
 
 export const setupYupLocales = (t) => {
   setLocale({
@@ -8,5 +8,5 @@ export const setupYupLocales = (t) => {
     string: {
       url: () => t('errors.url'),
     },
-  });
-};
+  })
+}

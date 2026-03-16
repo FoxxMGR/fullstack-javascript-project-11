@@ -1,9 +1,15 @@
+
+
 export default {
   translation: {
     languages: {
       ru: 'Русский',
       en: 'English',
     },
+    titles: {
+  feeds: 'Фиды',
+  posts: 'Посты',
+},
     buttons: {
       add: 'Добавить',
     },
@@ -19,6 +25,7 @@ export default {
       url: 'Ссылка должна быть валидным URL',
       duplicate: 'RSS уже существует',
       network: 'Ошибка сети',
+      invalidRss: 'Ресурс не содержит валидный RSS',
     },
   },
 };
