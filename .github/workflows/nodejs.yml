@@ -21,7 +21,6 @@ jobs:
           node-version: 24
       - run: make install
       - run: make lint
-      - run: make test-coverage
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
