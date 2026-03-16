@@ -1,5 +1,3 @@
-
-
 export default {
   translation: {
     languages: {
@@ -7,9 +5,9 @@ export default {
       en: 'English',
     },
     titles: {
-  feeds: 'Фиды',
-  posts: 'Посты',
-},
+      feeds: 'Фиды',
+      posts: 'Посты',
+    },
     buttons: {
       add: 'Добавить',
     },
@@ -28,4 +26,4 @@ export default {
       invalidRss: 'Ресурс не содержит валидный RSS',
     },
   },
-};
+}

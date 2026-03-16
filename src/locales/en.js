@@ -24,8 +24,8 @@ export default {
       invalidRss: 'Resource does not contain valid RSS',
     },
     titles: {
-  feeds: 'Feeds',
-  posts: 'Posts',
-},
+      feeds: 'Feeds',
+      posts: 'Posts',
+    },
   },
-};
+}

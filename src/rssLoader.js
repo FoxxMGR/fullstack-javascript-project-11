@@ -1,5 +1,3 @@
-// @ts-check
-
 import axios from 'axios'
 import parseRSS from './rssParser.js'
 
@@ -18,12 +16,10 @@ export default async (url) => {
     if (data?.contents) {
       return parseRSS(data.contents)
     }
-    throw new Error('errors.network')
   }
   catch (error) {
     if (error.message === 'errors.invalidRss') {
       throw error
     }
-    throw new Error('errors.network')
   }
 }
