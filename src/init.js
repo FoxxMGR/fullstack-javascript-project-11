@@ -87,6 +87,7 @@ export default async () => {
             // Добавляем фид
             state.feeds.push({
               id: feedId,
+              url: state.form.fields.url,
               ...feed,
             })
 
