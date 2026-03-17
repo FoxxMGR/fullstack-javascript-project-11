@@ -65,6 +65,52 @@ export default async () => {
     }
   }
 
+  // Функция для проверки новых постов в одном фиде
+  const checkFeedUpdates = async (feed) => {
+    try {
+      const { posts: newPosts } = await loadRSS(feed.url)
+
+      // Получаем существующие посты для этого фида
+      const existingPosts = state.posts.filter(post => post.feedId === feed.id)
+      const existingLinks = new Set(existingPosts.map(post => post.link))
+
+      // Находим новые посты (которых ещё нет)
+      const freshPosts = newPosts.filter(post => !existingLinks.has(post.link))
+
+      if (freshPosts.length > 0) {
+        // Добавляем новые посты с генерацией ID
+        const postsToAdd = freshPosts.map(post => ({
+          id: uniqueId(),
+          feedId: feed.id,
+          ...post,
+        }))
+
+        state.posts.unshift(...postsToAdd)
+      }
+    }
+    catch (error) {
+      console.error(`Ошибка обновления фида ${feed.url}:`, error)
+      // Не показываем ошибку пользователю при автообновлении
+    }
+  }
+
+  let isUpdating = false
+
+  // Функция для обновления всех фидов (только одна!)
+  const updateAllFeeds = async () => {
+    if (isUpdating) return
+
+    isUpdating = true
+    try {
+      const feeds = [...state.feeds]
+      await Promise.allSettled(feeds.map(feed => checkFeedUpdates(feed)))
+    }
+    finally {
+      isUpdating = false
+      setTimeout(updateAllFeeds, 5000)
+    }
+  }
+
   const watchedState = view(state, {
     handleSubmit: (e) => {
       e.preventDefault()
@@ -119,4 +165,7 @@ export default async () => {
   }, i18nInstance)
 
   watchedState.start()
+
+  // Запускаем автообновление
+  setTimeout(updateAllFeeds, 5000)
 }
