@@ -8,6 +8,9 @@ export default {
     },
     buttons: {
       add: 'Add',
+      preview: 'Preview',
+      close: 'Close',
+      readFull: 'Read full',
     },
     labels: {
       rssUrl: 'RSS link',

@@ -10,6 +10,9 @@ export default {
     },
     buttons: {
       add: 'Добавить',
+      preview: 'Просмотр',
+      close: 'Закрыть',
+      readFull: 'Читать полностью',
     },
     labels: {
       rssUrl: 'Ссылка RSS',

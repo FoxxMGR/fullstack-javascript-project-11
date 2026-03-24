@@ -36,6 +36,14 @@ export default async () => {
     },
     feeds: [],
     posts: [],
+    ui: {
+    // Храним ID прочитанных постов
+      readPosts: [], // используем Set для уникальности
+      modal: {
+        isOpen: false,
+        post: null, // текущий пост для модального окна
+      },
+    },
   })
 
   const schema = yup.object().shape({

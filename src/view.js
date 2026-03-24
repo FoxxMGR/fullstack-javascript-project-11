@@ -81,7 +81,6 @@ export default (state, handlers, i18nInstance) => {
       </button>
     `
 
-    // Убираем старый обработчик перед добавлением нового
     form.removeEventListener('submit', handlers.handleSubmit)
     form.addEventListener('submit', handlers.handleSubmit)
   }
@@ -120,27 +119,138 @@ export default (state, handlers, i18nInstance) => {
       return
     }
 
+    const readSet = new Set(snap.ui?.readPosts || [])
+
     postsContainer.innerHTML = `
       <h2>${i18nInstance.t('titles.posts')}</h2>
       <div class="list-group">
-        ${snap.posts.map(post => `
-          <a href="${post.link}" 
-             class="list-group-item list-group-item-action" 
-             target="_blank" 
-             rel="noopener noreferrer">
-            ${post.title}
-          </a>
-        `).join('')}
+        ${snap.posts.map((post) => {
+          const isRead = readSet.has(post.id)
+          return `
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <a href="${post.link}" 
+                 class="text-decoration-none ${isRead ? 'fw-normal' : 'fw-bold'}"
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 data-post-id="${post.id}">
+                ${post.title}
+              </a>
+              <button 
+                class="btn btn-sm btn-outline-secondary preview-btn" 
+                data-post-id="${post.id}"
+                data-post-title="${post.title}"
+                data-post-description="${post.description}"
+                data-post-link="${post.link}">
+                ${i18nInstance.t('buttons.preview')}
+              </button>
+            </div>
+          `
+        }).join('')}
       </div>
     `
+
+    // Добавляем обработчики для кнопок предпросмотра
+    document.querySelectorAll('.preview-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const postId = btn.dataset.postId
+        const post = snap.posts.find(p => p.id === postId)
+
+        if (post) {
+          // Отмечаем пост как прочитанный
+          if (!readSet.has(postId)) {
+            if (!state.ui.readPosts.includes(postId)) {
+              state.ui.readPosts.push(postId)
+            }
+          }
+
+          // Открываем модальное окно
+          state.ui.modal.post = post
+          state.ui.modal.isOpen = true
+        }
+      })
+    })
+
+    // Добавляем обработчики для ссылок (чтобы отмечать прочитанным при клике)
+    document.querySelectorAll('.list-group-item a').forEach((link) => {
+      link.addEventListener('click', () => {
+        const postId = link.dataset.postId
+        if (postId && !readSet.has(postId)) {
+          if (!state.ui.readPosts.includes(postId)) {
+            state.ui.readPosts.push(postId)
+          }
+        }
+      })
+    })
+  }
+
+  const renderModal = () => {
+    const snap = snapshot(state)
+    const modalContainer = document.getElementById('modal-container')
+
+    if (!modalContainer) {
+      const containerDiv = document.createElement('div')
+      containerDiv.id = 'modal-container'
+      document.body.appendChild(containerDiv)
+    }
+
+    const containerDiv = document.getElementById('modal-container')
+
+    if (!snap.ui?.modal?.isOpen || !snap.ui?.modal?.post) {
+      if (containerDiv) containerDiv.innerHTML = ''
+      return
+    }
+
+    const post = snap.ui.modal.post
+
+    containerDiv.innerHTML = `
+      <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">${post.title}</h5>
+              <button type="button" class="btn-close" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>${post.description}</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                ${i18nInstance.t('buttons.close')}
+              </button>
+              <a href="${post.link}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                ${i18nInstance.t('buttons.readFull')}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+
+    const closeBtn = containerDiv.querySelector('.btn-close')
+    const closeSecondaryBtn = containerDiv.querySelector('.btn-secondary')
+
+    const closeModal = () => {
+      state.ui.modal.isOpen = false
+      state.ui.modal.post = null
+    }
+
+    closeBtn?.addEventListener('click', closeModal)
+    closeSecondaryBtn?.addEventListener('click', closeModal)
+
+    containerDiv.querySelector('.modal')?.addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal')) {
+        closeModal()
+      }
+    })
   }
 
   const render = () => {
-    ensureContainers() // создаём контейнеры один раз
+    ensureContainers()
     renderLanguageSwitcher()
     renderForm()
     renderFeeds()
     renderPosts()
+    renderModal()
   }
 
   subscribe(state, render)
