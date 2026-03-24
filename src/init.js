@@ -38,7 +38,7 @@ export default async () => {
     posts: [],
     ui: {
     // Храним ID прочитанных постов
-      readPosts: [], // используем Set для уникальности
+      readPosts: [],
       modal: {
         isOpen: false,
         post: null, // текущий пост для модального окна
