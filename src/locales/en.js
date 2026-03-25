@@ -30,5 +30,8 @@ export default {
       feeds: 'Feeds',
       posts: 'Posts',
     },
+    modal: {
+      goal: 'Goal: Learn to extract necessary data from the tree',
+    },
   },
 }
