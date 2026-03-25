@@ -99,9 +99,10 @@ export default (state, handlers, i18nInstance) => {
     }
     feedback.className = `feedback small mt-2 ${processState === 'success' ? 'text-success' : processState === 'error' ? 'text-danger' : ''}`
     feedback.innerHTML = `
-    ${processState === 'success' ? i18nInstance.t('feedback.success') : ''}
-    ${processState === 'error' && !errors.url ? i18nInstance.t('feedback.error') : ''}
-  `
+  ${processState === 'success' ? i18nInstance.t('feedback.success') : ''}
+  ${processState === 'error' && errors.url ? i18nInstance.t(errors.url) : ''}
+  ${processState === 'error' && !errors.url ? i18nInstance.t('feedback.error') : ''}
+`
 
     let button = form.querySelector('button[type="submit"]')
     if (!button) {
