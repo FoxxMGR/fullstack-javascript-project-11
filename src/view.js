@@ -207,9 +207,9 @@ export default (state, handlers, i18nInstance) => {
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">${post.title}</h5>
-              <button type="button" class="btn-close" aria-label="Close"></button>
-            </div>
+  <h5 class="modal-title">${i18nInstance.t('modal.goal')}</h5>
+  <button type="button" class="btn-close" aria-label="Close"></button>
+</div>
             <div class="modal-body">
               <p>${post.description}</p>
             </div>
