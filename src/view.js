@@ -218,7 +218,7 @@ export default (state, handlers, i18nInstance) => {
 
       const link = document.createElement('a')
       link.href = post.link
-      link.className = `fw-${isRead ? 'normal' : 'bold'}`
+      link.className = isRead ? 'fw-normal link-secondary' : 'fw-bold'
       link.target = '_blank'
       link.rel = 'noopener noreferrer'
       link.dataset.postId = post.id

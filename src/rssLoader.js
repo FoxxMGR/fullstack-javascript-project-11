@@ -25,6 +25,6 @@ export default async (url) => {
       throw error
     }
 
-    throw new Error('errors.network')
+    throw new Error('errors.network', { cause: error })
   }
 }
