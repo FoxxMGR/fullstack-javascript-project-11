@@ -1,12 +1,12 @@
 import { setLocale } from 'yup'
 
-export const setupYupLocales = (t) => {
+export const setupYupLocales = () => {
   setLocale({
     mixed: {
-      required: () => t('errors.required'),
+      required: () => 'errors.required',
     },
     string: {
-      url: () => t('errors.url'),
+      url: () => 'errors.url',
     },
   })
 }
