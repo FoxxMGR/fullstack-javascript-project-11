@@ -85,14 +85,6 @@ export default (state, handlers, i18nInstance) => {
     input.value = snap.form.fields.url
     input.className = `form-control ${!valid && processState === 'error' ? 'is-invalid' : ''}`
 
-    let invalidFeedback = form.querySelector('.invalid-feedback')
-    if (!invalidFeedback) {
-      invalidFeedback = document.createElement('div')
-      invalidFeedback.className = 'invalid-feedback'
-      form.appendChild(invalidFeedback)
-    }
-    invalidFeedback.textContent = errors.url ? i18nInstance.t(errors.url) : ''
-
     let feedback = form.querySelector('.feedback')
     if (!feedback) {
       feedback = document.createElement('div')
