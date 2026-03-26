@@ -16,14 +16,14 @@ export default (state, handlers, i18nInstance) => {
     if (!document.getElementById('feeds-container')) {
       const feedsDiv = document.createElement('div')
       feedsDiv.id = 'feeds-container'
-      feedsDiv.className = 'mt-4'
+      feedsDiv.className = 'feeds mt-4'
       container.appendChild(feedsDiv)
     }
 
     if (!document.getElementById('posts-container')) {
       const postsDiv = document.createElement('div')
       postsDiv.id = 'posts-container'
-      postsDiv.className = 'mt-4'
+      postsDiv.className = 'posts mt-4'
       container.appendChild(postsDiv)
     }
   }
@@ -97,12 +97,23 @@ export default (state, handlers, i18nInstance) => {
       feedback.className = 'feedback small mt-2'
       form.appendChild(feedback)
     }
+
+    // ФОРМИРУЕМ СООБЩЕНИЕ
+    let message = ''
+    if (processState === 'success') {
+      message = i18nInstance.t('feedback.success')
+    }
+    else if (processState === 'error') {
+      if (errors.url) {
+        message = i18nInstance.t(errors.url)
+      }
+      else {
+        message = i18nInstance.t('feedback.error')
+      }
+    }
+
     feedback.className = `feedback small mt-2 ${processState === 'success' ? 'text-success' : processState === 'error' ? 'text-danger' : ''}`
-    feedback.innerHTML = `
-  ${processState === 'success' ? i18nInstance.t('feedback.success') : ''}
-  ${processState === 'error' && errors.url ? i18nInstance.t(errors.url) : ''}
-  ${processState === 'error' && !errors.url ? i18nInstance.t('feedback.error') : ''}
-`
+    feedback.textContent = message
 
     let button = form.querySelector('button[type="submit"]')
     if (!button) {
@@ -241,9 +252,9 @@ export default (state, handlers, i18nInstance) => {
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-  <h5 class="modal-title">${i18nInstance.t('modal.goal')}</h5>
-  <button type="button" class="btn-close" aria-label="Close"></button>
-</div>
+              <h5 class="modal-title">${i18nInstance.t('modal.goal')}</h5>
+              <button type="button" class="btn-close" aria-label="Close"></button>
+            </div>
             <div class="modal-body">
               <p>${post.description}</p>
             </div>
