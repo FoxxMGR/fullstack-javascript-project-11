@@ -13,7 +13,6 @@
       <div class="col-md-6 mx-auto">
         <h1 class="text-center mb-4">RSS Reader</h1>
         
-        <!-- Изменения: добавлен name="url" для FormData и класс feedback для сообщений -->
         <form>
           <div class="mb-3">
             <label for="rss-url" class="form-label">Ссылка RSS</label>
@@ -23,10 +22,9 @@
               id="rss-url"
               name="url" 
               placeholder="https://example.com/rss"
-              autocomplete="off"
               aria-label="url"
             >
-            <!-- Блок для сообщений об ошибках/успехе -->
+            <div class="invalid-feedback"></div>
             <div class="feedback small mt-2"></div>
           </div>
           <button type="submit" class="btn btn-primary">Добавить</button>

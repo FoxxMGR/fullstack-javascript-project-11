@@ -1,5 +1,16 @@
 import { subscribe, snapshot } from 'valtio/vanilla'
 
+// Вспомогательная функция для экранирования HTML
+const escapeHtml = (str) => {
+  if (!str) return ''
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 /**
  * @param {Object} state
  * @param {Object} handlers
@@ -34,9 +45,9 @@ export default (state, handlers, i18nInstance) => {
 
     const switcher = document.createElement('div')
     switcher.className = 'language-switcher btn-group mb-3'
-    switcher.setAttribute('role', 'group');
+    switcher.setAttribute('role', 'group')
 
-    ['ru', 'en'].forEach((lng) => {
+    ;['ru', 'en'].forEach((lng) => {
       const btn = document.createElement('button')
       btn.type = 'button'
       btn.className = `btn btn-sm ${state.lng === lng ? 'btn-primary' : 'btn-outline-primary'}`
@@ -89,7 +100,16 @@ export default (state, handlers, i18nInstance) => {
       invalidFeedback.className = 'invalid-feedback'
       form.appendChild(invalidFeedback)
     }
-    invalidFeedback.textContent = errors.url ? i18nInstance.t(errors.url) : ''
+
+    // Показываем ошибку ТОЛЬКО в invalid-feedback для Bootstrap валидации
+    if (errors.url && !valid && processState === 'error') {
+      invalidFeedback.textContent = i18nInstance.t(errors.url)
+      invalidFeedback.style.display = 'block'
+    }
+    else {
+      invalidFeedback.textContent = ''
+      invalidFeedback.style.display = 'none'
+    }
 
     let feedback = form.querySelector('.feedback')
     if (!feedback) {
@@ -98,22 +118,32 @@ export default (state, handlers, i18nInstance) => {
       form.appendChild(feedback)
     }
 
-    // ФОРМИРУЕМ СООБЩЕНИЕ
+    // ФОРМИРУЕМ СООБЩЕНИЕ - ТОЛЬКО для статуса (успех/ошибка сети)
+    // НЕ показываем ошибки валидации здесь, чтобы не дублировать
     let message = ''
     if (processState === 'success') {
       message = i18nInstance.t('feedback.success')
+      feedback.className = 'feedback small mt-2 text-success'
+      feedback.textContent = message
     }
     else if (processState === 'error') {
-      if (errors.url) {
-        message = i18nInstance.t(errors.url)
+      // Показываем сообщение об ошибке сети только если нет ошибки валидации
+      if (!errors.url) {
+        message = i18nInstance.t('feedback.error')
+        feedback.className = 'feedback small mt-2 text-danger'
+        feedback.textContent = message
       }
       else {
-        message = i18nInstance.t('feedback.error')
+        // Если есть ошибка валидации, очищаем feedback (ошибка уже показана в invalid-feedback)
+        feedback.className = 'feedback small mt-2'
+        feedback.textContent = ''
       }
     }
-
-    feedback.className = `feedback small mt-2 ${processState === 'success' ? 'text-success' : processState === 'error' ? 'text-danger' : ''}`
-    feedback.textContent = message
+    else {
+      // Очищаем feedback в остальных случаях
+      feedback.className = 'feedback small mt-2'
+      feedback.textContent = ''
+    }
 
     let button = form.querySelector('button[type="submit"]')
     if (!button) {
@@ -145,9 +175,9 @@ export default (state, handlers, i18nInstance) => {
       <div class="list-group mb-4">
         ${snap.feeds.map(feed => `
           <div class="list-group-item">
-            <h5 class="mb-1">${feed.title}</h5>
-            <p class="mb-1">${feed.description}</p>
-            <small>${feed.link}</small>
+            <h3 class="mb-1">${escapeHtml(feed.title)}</h3>
+            <p class="mb-1">${escapeHtml(feed.description)}</p>
+            <small>${escapeHtml(feed.link)}</small>
           </div>
         `).join('')}
       </div>
@@ -168,36 +198,40 @@ export default (state, handlers, i18nInstance) => {
 
     postsContainer.innerHTML = `
       <h2>${i18nInstance.t('titles.posts')}</h2>
-      <div class="list-group">
+      <ul class="list-group">
         ${snap.posts.map((post) => {
           const isRead = readSet.has(post.id)
           return `
-            <div class="list-group-item d-flex justify-content-between align-items-center">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
               <a href="${post.link}" 
                  class="text-decoration-none ${isRead ? 'fw-normal' : 'fw-bold'}"
                  target="_blank" 
                  rel="noopener noreferrer"
                  data-post-id="${post.id}">
-                ${post.title}
+                ${escapeHtml(post.title)}
               </a>
               <button 
                 class="btn btn-sm btn-outline-secondary preview-btn" 
                 data-post-id="${post.id}"
-                data-post-title="${post.title}"
-                data-post-description="${post.description}"
+                data-post-title="${escapeHtml(post.title)}"
+                data-post-description="${escapeHtml(post.description)}"
                 data-post-link="${post.link}">
                 ${i18nInstance.t('buttons.preview')}
               </button>
-            </div>
+            </li>
           `
         }).join('')}
-      </div>
+      </ul>
     `
 
     // Добавляем обработчики для кнопок предпросмотра
     document.querySelectorAll('.preview-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const postId = btn.dataset.postId
+      // Убираем старые обработчики, чтобы не дублировать
+      const newBtn = btn.cloneNode(true)
+      btn.parentNode.replaceChild(newBtn, btn)
+
+      newBtn.addEventListener('click', () => {
+        const postId = newBtn.dataset.postId
         const post = snap.posts.find(p => p.id === postId)
 
         if (post) {
@@ -217,8 +251,12 @@ export default (state, handlers, i18nInstance) => {
 
     // Добавляем обработчики для ссылок (чтобы отмечать прочитанным при клике)
     document.querySelectorAll('.list-group-item a').forEach((link) => {
-      link.addEventListener('click', () => {
-        const postId = link.dataset.postId
+      // Убираем старые обработчики, чтобы не дублировать
+      const newLink = link.cloneNode(true)
+      link.parentNode.replaceChild(newLink, link)
+
+      newLink.addEventListener('click', () => {
+        const postId = newLink.dataset.postId
         if (postId && !readSet.has(postId)) {
           if (!state.ui.readPosts.includes(postId)) {
             state.ui.readPosts.push(postId)
@@ -230,33 +268,31 @@ export default (state, handlers, i18nInstance) => {
 
   const renderModal = () => {
     const snap = snapshot(state)
-    const modalContainer = document.getElementById('modal-container')
+    let modalContainer = document.getElementById('modal-container')
 
     if (!modalContainer) {
-      const containerDiv = document.createElement('div')
-      containerDiv.id = 'modal-container'
-      document.body.appendChild(containerDiv)
+      modalContainer = document.createElement('div')
+      modalContainer.id = 'modal-container'
+      document.body.appendChild(modalContainer)
     }
 
-    const containerDiv = document.getElementById('modal-container')
-
     if (!snap.ui?.modal?.isOpen || !snap.ui?.modal?.post) {
-      if (containerDiv) containerDiv.innerHTML = ''
+      modalContainer.innerHTML = ''
       return
     }
 
     const post = snap.ui.modal.post
 
-    containerDiv.innerHTML = `
-      <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
-        <div class="modal-dialog">
+    modalContainer.innerHTML = `
+      <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">${i18nInstance.t('modal.goal')}</h5>
-              <button type="button" class="btn-close" aria-label="Close"></button>
+              <h5 class="modal-title">${escapeHtml(post.title)}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <p>${post.description}</p>
+              <p>${escapeHtml(post.description)}</p>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -271,21 +307,17 @@ export default (state, handlers, i18nInstance) => {
       </div>
     `
 
-    const closeBtn = containerDiv.querySelector('.btn-close')
-    const closeSecondaryBtn = containerDiv.querySelector('.btn-secondary')
-
     const closeModal = () => {
       state.ui.modal.isOpen = false
       state.ui.modal.post = null
     }
 
-    closeBtn?.addEventListener('click', closeModal)
-    closeSecondaryBtn?.addEventListener('click', closeModal)
+    const closeButtons = modalContainer.querySelectorAll('[data-bs-dismiss="modal"]')
+    const modalElement = modalContainer.querySelector('.modal')
 
-    containerDiv.querySelector('.modal')?.addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal')) {
-        closeModal()
-      }
+    closeButtons.forEach(btn => btn.addEventListener('click', closeModal))
+    modalElement?.addEventListener('click', (e) => {
+      if (e.target === modalElement) closeModal()
     })
   }
 

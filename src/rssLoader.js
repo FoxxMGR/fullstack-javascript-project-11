@@ -13,13 +13,25 @@ export default async (url) => {
     const response = await axios.get(proxyUrl)
     const data = response.data
 
-    if (data?.contents) {
+    // Проверяем, что данные получены и содержат контент
+    if (!data || !data.contents) {
+      throw new Error('errors.network')
+    }
+
+    try {
       return parseRSS(data.contents)
+    }
+    catch (parseError) {
+      // Если парсинг не удался
+      throw new Error('errors.invalidRss')
     }
   }
   catch (error) {
-    if (error.message === 'errors.invalidRss') {
+    // Если это наша кастомная ошибка - пробрасываем её
+    if (error.message === 'errors.network' || error.message === 'errors.invalidRss') {
       throw error
     }
+    // Иначе - ошибка сети
+    throw new Error('errors.network')
   }
 }

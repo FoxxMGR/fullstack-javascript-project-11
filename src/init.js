@@ -1,3 +1,4 @@
+// @ts-check
 import * as yup from 'yup'
 import { proxy } from 'valtio/vanilla'
 import i18next from 'i18next'
@@ -37,7 +38,7 @@ export default async () => {
     feeds: [],
     posts: [],
     ui: {
-    // Храним ID прочитанных постов
+      // Храним ID прочитанных постов
       readPosts: [],
       modal: {
         isOpen: false,
@@ -131,40 +132,45 @@ export default async () => {
       state.form.errors = { url: errors.url || null }
       state.form.valid = Object.keys(errors).length === 0
 
-      if (state.form.valid) {
-        state.form.processState = 'sending'
-
-        loadRSS(url)
-          .then(({ feed, posts }) => {
-            const feedId = uniqueId()
-
-            // Добавляем фид
-            state.feeds.push({
-              id: feedId,
-              url: state.form.fields.url,
-              ...feed,
-            })
-
-            // Добавляем посты с ссылкой на фид
-            const newPosts = posts.map(post => ({
-              id: uniqueId(),
-              feedId,
-              ...post,
-            }))
-
-            state.posts.push(...newPosts)
-
-            state.form.processState = 'success'
-            state.form.fields.url = ''
-          })
-          .catch((error) => {
-            state.form.processState = 'error'
-            state.form.errors.url = error.message || 'errors.network'
-          })
-      }
-      else {
+      // Если форма невалидна, устанавливаем состояние ошибки
+      if (!state.form.valid) {
         state.form.processState = 'error'
+        return
       }
+
+      state.form.processState = 'sending'
+
+      loadRSS(url)
+        .then(({ feed, posts }) => {
+          const feedId = uniqueId()
+
+          // Добавляем фид
+          state.feeds.push({
+            id: feedId,
+            url: state.form.fields.url,
+            ...feed,
+          })
+
+          // Добавляем посты с ссылкой на фид
+          const newPosts = posts.map(post => ({
+            id: uniqueId(),
+            feedId,
+            ...post,
+          }))
+
+          state.posts.push(...newPosts)
+
+          state.form.processState = 'success'
+          state.form.fields.url = ''
+          // Очищаем ошибки после успешной загрузки
+          state.form.errors = { url: null }
+          state.form.valid = true
+        })
+        .catch((error) => {
+          state.form.processState = 'error'
+          state.form.errors.url = error.message || 'errors.network'
+          state.form.valid = false
+        })
     },
     handleLanguageChange: (lng) => {
       state.lng = lng
