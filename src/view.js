@@ -305,6 +305,7 @@ export default (state, handlers, i18nInstance) => {
               <button type="button" class="btn-close" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+              <p>${i18nInstance.t('modal.goal')}</p>
               <p>${post.description}</p>
             </div>
             <div class="modal-footer">
