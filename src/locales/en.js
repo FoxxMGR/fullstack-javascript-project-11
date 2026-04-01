@@ -3,7 +3,7 @@
 export default {
   translation: {
     languages: {
-      ru: 'Russian',
+      ru: 'Русский',
       en: 'English',
     },
     buttons: {

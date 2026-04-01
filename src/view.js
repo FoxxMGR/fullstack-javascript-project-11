@@ -2,12 +2,9 @@ import { subscribe, snapshot } from 'valtio/vanilla'
 
 /**
  * @param {Object} state
- * @param {Object} handlers
- * @param {Function} handlers.handleSubmit
- * @param {Function} handlers.handleLanguageChange
  * @param {Object} i18nInstance
  */
-export default (state, handlers, i18nInstance) => {
+export default (state, i18nInstance) => {
   const container = document.querySelector('.container')
   if (!container) return { start: () => {} }
 
@@ -41,7 +38,6 @@ export default (state, handlers, i18nInstance) => {
       btn.type = 'button'
       btn.className = `btn btn-sm ${state.lng === lng ? 'btn-primary' : 'btn-outline-primary'}`
       btn.textContent = i18nInstance.t(`languages.${lng}`)
-      btn.addEventListener('click', () => handlers.handleLanguageChange(lng))
       switcher.appendChild(btn)
     })
 
@@ -61,7 +57,6 @@ export default (state, handlers, i18nInstance) => {
     form.noValidate = true
     form.classList.add('rss-form')
 
-    // === СОЗДАЁМ ИЛИ НАХОДИМ ЭЛЕМЕНТЫ ===
     let label = form.querySelector('label')
     if (!label) {
       label = document.createElement('label')
@@ -92,7 +87,6 @@ export default (state, handlers, i18nInstance) => {
       form.appendChild(feedback)
     }
 
-    // ФОРМИРУЕМ СООБЩЕНИЕ
     let message = ''
     if (processState === 'success') {
       message = i18nInstance.t('feedback.success')
@@ -118,10 +112,6 @@ export default (state, handlers, i18nInstance) => {
     }
     button.disabled = processState === 'sending'
     button.textContent = i18nInstance.t('buttons.add')
-
-    // Убираем старый обработчик перед добавлением нового
-    form.removeEventListener('submit', handlers.handleSubmit)
-    form.addEventListener('submit', handlers.handleSubmit)
   }
 
   const renderFeeds = () => {
@@ -183,7 +173,7 @@ export default (state, handlers, i18nInstance) => {
       return
     }
 
-    const readSet = new Set(snap.ui?.readPosts || [])
+    const readSet = state.ui.readPosts
 
     postsContainer.innerHTML = ''
 
@@ -220,11 +210,6 @@ export default (state, handlers, i18nInstance) => {
       button.type = 'button'
       button.className = 'btn btn-outline-primary btn-sm preview-btn'
       button.dataset.postId = post.id
-      button.dataset.postTitle = post.title
-      button.dataset.postDescription = post.description
-      button.dataset.postLink = post.link
-      button.dataset.bsToggle = 'modal'
-      button.dataset.bsTarget = '#modal'
       button.textContent = i18nInstance.t('buttons.preview')
 
       item.appendChild(link)
@@ -234,101 +219,6 @@ export default (state, handlers, i18nInstance) => {
 
     postsContainer.appendChild(card)
     postsContainer.appendChild(list)
-
-    // Добавляем обработчики для кнопок предпросмотра
-    document.querySelectorAll('.preview-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const postId = btn.dataset.postId
-        const post = snap.posts.find(p => p.id === postId)
-
-        if (post) {
-          // Отмечаем пост как прочитанный
-          if (!readSet.has(postId)) {
-            if (!state.ui.readPosts.includes(postId)) {
-              state.ui.readPosts.push(postId)
-            }
-          }
-
-          // Открываем модальное окно
-          state.ui.modal.post = post
-          state.ui.modal.isOpen = true
-        }
-      })
-    })
-
-    // Добавляем обработчики для ссылок (чтобы отмечать прочитанным при клике)
-    document.querySelectorAll('.list-group-item a').forEach((link) => {
-      link.addEventListener('click', () => {
-        const postId = link.dataset.postId
-        if (postId && !readSet.has(postId)) {
-          if (!state.ui.readPosts.includes(postId)) {
-            state.ui.readPosts.push(postId)
-          }
-        }
-      })
-    })
-  }
-
-  const renderModal = () => {
-    const snap = snapshot(state)
-    const modalContainer = document.getElementById('modal-container')
-
-    if (!modalContainer) {
-      const containerDiv = document.createElement('div')
-      containerDiv.id = 'modal-container'
-      document.body.appendChild(containerDiv)
-    }
-
-    const containerDiv = document.getElementById('modal-container')
-
-    if (!snap.ui?.modal?.isOpen || !snap.ui?.modal?.post) {
-      if (containerDiv) containerDiv.innerHTML = ''
-      return
-    }
-
-    const post = snap.ui.modal.post
-
-    containerDiv.innerHTML = `
-      <div class="modal fade show" id="modal" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">${post.title}</h5>
-              <button type="button" class="btn-close" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <p>${i18nInstance.t('modal.goal')}</p>
-              <p>${post.description}</p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                ${i18nInstance.t('buttons.close')}
-              </button>
-              <a href="${post.link}" class="btn btn-primary full-article" target="_blank" rel="noopener noreferrer">
-                ${i18nInstance.t('buttons.readFull')}
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    `
-
-    const closeBtn = containerDiv.querySelector('.btn-close')
-    const closeSecondaryBtn = containerDiv.querySelector('.btn-secondary')
-
-    const closeModal = () => {
-      state.ui.modal.isOpen = false
-      state.ui.modal.post = null
-    }
-
-    closeBtn?.addEventListener('click', closeModal)
-    closeSecondaryBtn?.addEventListener('click', closeModal)
-
-    containerDiv.querySelector('.modal')?.addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal')) {
-        closeModal()
-      }
-    })
   }
 
   const render = () => {
@@ -337,14 +227,40 @@ export default (state, handlers, i18nInstance) => {
     renderForm()
     renderFeeds()
     renderPosts()
-    renderModal()
   }
 
-  subscribe(state, render)
+  // Раздельные подписки
+  subscribe(state.form, () => {
+    renderForm()
+  })
+
+  subscribe(state.feeds, () => {
+    renderFeeds()
+  })
+
+  subscribe(state.posts, () => {
+    renderPosts()
+  })
+
+  subscribe(state.ui.readPosts, () => {
+    renderPosts()
+  })
+
+  subscribe(state, (ops) => {
+    const lngChanged = ops.some(op => op[1] && op[1].includes('lng'))
+    if (lngChanged) {
+      renderLanguageSwitcher()
+      renderForm()
+      renderFeeds()
+      renderPosts()
+    }
+  })
+
+  const start = () => {
+    render()
+  }
 
   return {
-    start: () => {
-      render()
-    },
+    start,
   }
 }
