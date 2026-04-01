@@ -177,7 +177,7 @@ export default async () => {
   }
 
   // Инициализация Bootstrap модального окна
-  const modalElement = document.getElementById('rssModal')
+  const modalElement = document.getElementById('modal')
   let modalInstance = null
 
   if (modalElement) {
