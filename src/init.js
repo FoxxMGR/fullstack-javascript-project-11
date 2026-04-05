@@ -171,9 +171,7 @@ export default async () => {
 
   // Контроллер для отметки поста прочитанным
   const handleMarkAsRead = (postId) => {
-    if (!state.ui.readPosts.has(postId)) {
-      state.ui.readPosts.add(postId)
-    }
+    state.ui.readPosts.add(postId)
   }
 
   // Инициализация Bootstrap модального окна
@@ -189,9 +187,8 @@ export default async () => {
     if (!modalInstance || !modalElement) return
 
     // Отмечаем пост как прочитанный
-    if (!state.ui.readPosts.has(post.id)) {
-      state.ui.readPosts.add(post.id)
-    }
+
+    state.ui.readPosts.add(post.id)
 
     // Обновляем содержимое модального окна
     const modalTitle = modalElement.querySelector('.modal-title')
@@ -248,7 +245,7 @@ export default async () => {
     // Обработка кнопок языка
     const langBtn = e.target.closest('.language-switcher button')
     if (langBtn) {
-      const lng = langBtn.textContent === 'Русский' ? 'ru' : 'en'
+      const lng = langBtn.getAttribute('data-lng')
       handleLanguageChange(lng)
       return
     }

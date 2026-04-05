@@ -36,6 +36,7 @@ export default (state, i18nInstance) => {
     ['ru', 'en'].forEach((lng) => {
       const btn = document.createElement('button')
       btn.type = 'button'
+      btn.setAttribute('data-lng', lng)
       btn.className = `btn btn-sm ${state.lng === lng ? 'btn-primary' : 'btn-outline-primary'}`
       btn.textContent = i18nInstance.t(`languages.${lng}`)
       switcher.appendChild(btn)
